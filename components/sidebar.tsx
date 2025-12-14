@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Settings, Newspaper } from 'lucide-react';
+import { Home, Settings, Newspaper, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function Sidebar() {
@@ -10,7 +10,9 @@ export function Sidebar() {
 
     const links = [
         { href: '/dashboard', label: 'Feed de Noticias', icon: Home },
+        { href: '/dashboard/catalog', label: 'Catálogo de Medios', icon: Globe },
         { href: '/dashboard/settings', label: 'Configuración', icon: Settings },
+        { href: '/dashboard/debug', label: 'Debug', icon: Settings },
     ];
 
     return (

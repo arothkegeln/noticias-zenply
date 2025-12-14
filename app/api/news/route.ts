@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Parser from 'rss-parser';
 import * as cheerio from 'cheerio';
 import { NewsItem } from '@/types';
+import { extractKeywords } from '@/lib/keyword-extractor';
 
 const parser = new Parser();
 
@@ -42,9 +43,10 @@ export async function POST(request: Request) {
                                         link: absoluteLink,
                                         sourceId: source.id,
                                         sourceName: source.name,
-                                        pubDate: new Date().toISOString(), // Web scraping doesn't always give date easily
+                                        pubDate: new Date().toISOString(),
                                         contentSnippet: '',
                                         matchedActorIds: [],
+                                        tags: extractKeywords(title, ''),
                                     });
                                 }
                             });
@@ -53,7 +55,6 @@ export async function POST(request: Request) {
                             console.error(`Error scraping ${source.name}:`, scrapeError);
                         }
                     } else {
-                        // Default to RSS
                         const feed = await parser.parseURL(source.url);
                         feed.items.forEach((item) => {
                             if (item.title && item.link) {
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
                                     pubDate: item.pubDate || new Date().toISOString(),
                                     contentSnippet: item.contentSnippet || item.content,
                                     matchedActorIds: [],
+                                    tags: extractKeywords(item.title, item.contentSnippet || item.content),
                                 });
                             }
                         });

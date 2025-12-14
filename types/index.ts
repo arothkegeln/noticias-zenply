@@ -1,8 +1,10 @@
+export type SourceType = 'rss' | 'web';
+
 export interface NewsSource {
   id: string;
   name: string;
   url: string;
-  type: 'rss' | 'web';
+  type: SourceType;
   selector?: string; // CSS selector for web scraping
 }
 
@@ -22,4 +24,10 @@ export interface NewsItem {
   pubDate: string;
   contentSnippet?: string;
   matchedActorIds: string[];
+  tags?: Tag[];
+}
+
+export interface Tag {
+  text: string;
+  category: 'company' | 'person' | 'country' | 'concept';
 }

@@ -11,7 +11,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
 
   const fetchNews = useCallback(async () => {
-    if (config.sources.length === 0) return;
+    if (config.sources.length === 0) {
+      setNews([]); // Limpiar noticias si no hay fuentes
+      return;
+    }
 
     setLoading(true);
     try {
@@ -56,10 +59,10 @@ export default function Dashboard() {
   }, [config.sources, config.actors]);
 
   useEffect(() => {
-    if (loaded && config.sources.length > 0) {
-      fetchNews();
+    if (loaded) {
+      fetchNews(); // Ejecutar siempre para limpiar o cargar noticias
     }
-  }, [loaded, config.sources, fetchNews]); // Re-fetch only meaningfully if sources change? Or manual refresh.
+  }, [loaded, config.sources, fetchNews]);
 
   if (!loaded) return null;
 
