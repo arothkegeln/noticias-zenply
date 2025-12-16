@@ -6,9 +6,10 @@ import { NewsFeed } from '@/components/news-feed';
 import { NewsItem } from '@/types';
 
 export default function Dashboard() {
-  const { config, loaded, addActor } = useConfig();
+  const { config, loaded, addActor, hideNews } = useConfig();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
   const fetchNews = useCallback(async () => {
     if (config.sources.length === 0) {
@@ -26,30 +27,10 @@ export default function Dashboard() {
 
       const data = await res.json();
       if (data.news) {
-        // Here we can do client-side actor matching if needed to tag them
-        // For now, assume simple matching logic or just pass actors to NewsCard
-        // We will perform matching here to populate matchedActorIds if the API didn't
-
-        const enrichedNews = data.news.map((item: NewsItem) => {
-          const matchedIds = config.actors
-            .filter(actor => {
-              const textToCheck = (item.title + " " + (item.contentSnippet || "")).toLowerCase();
-              return actor.keywords.some(k => textToCheck.includes(k.toLowerCase()));
-            })
-            .map(actor => actor.id);
-
-          return { ...item, matchedActorIds: matchedIds };
-        });
-
-        // Filter: Show all, but prioritize/badge matched ones?
-        // User asked "permita hacer seguimiento... siempre siguiendo a los mismmos actores"
-        // Maybe we ONLY show matched news? Or highlight them?
-        // "hacer seguimiento de varios siios... pero siempre siguiendo a los mismmos actores"
-        // Allows tracking sites BUT focusing on actors. 
-        // I will show ALL news, but if 'matchedIds' is > 0, they are highlighted.
-        // OR filtering toggle? For now, show all with badging.
-
+        // Enrich locally with matching logic
+        const enrichedNews = enrichNewsWithActors(data.news, config.actors);
         setNews(enrichedNews);
+        setHasMore(data.news.length === 100); // Assume more if full batch
       }
     } catch (e) {
       console.error(e);
@@ -57,6 +38,48 @@ export default function Dashboard() {
       setLoading(false);
     }
   }, [config.sources, config.actors]);
+
+  const loadMore = async () => {
+    if (!hasMore || loading || news.length === 0) return;
+
+    const lastId = news[news.length - 1].id;
+    try {
+      const res = await fetch(`/api/news?cursor=${lastId}&limit=50`);
+      const data = await res.json();
+
+      if (data.news && data.news.length > 0) {
+        const enrichedNews = enrichNewsWithActors(data.news, config.actors);
+
+        // Filter duplicates just in case
+        setNews(prev => {
+          const existingIds = new Set(prev.map(n => n.id));
+          const uniqueNew = enrichedNews.filter((n: NewsItem) => !existingIds.has(n.id));
+          return [...prev, ...uniqueNew];
+        });
+
+        if (data.news.length < 50) setHasMore(false);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Failed to load more news", error);
+    }
+  };
+
+  // Helper to enrich news (common logic)
+  const enrichNewsWithActors = (rawNews: NewsItem[], actors: any[]) => {
+    return rawNews.map((item: NewsItem) => {
+      const matchedIds = actors
+        .filter(actor => {
+          const textToCheck = (item.title + " " + (item.contentSnippet || "")).toLowerCase();
+          return actor.keywords.some((k: string) => textToCheck.includes(k.toLowerCase()));
+        })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((actor: any) => actor.id);
+
+      return { ...item, matchedActorIds: matchedIds };
+    });
+  };
 
   useEffect(() => {
     if (loaded) {
@@ -74,6 +97,10 @@ export default function Dashboard() {
         loading={loading}
         onRefresh={fetchNews}
         onAddActor={addActor}
+        hiddenNewsUrls={config.hiddenNewsUrls}
+        onHide={hideNews}
+        hasMore={hasMore}
+        onLoadMore={loadMore}
       />
     </div>
   );

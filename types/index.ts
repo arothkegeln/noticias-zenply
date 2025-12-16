@@ -6,6 +6,8 @@ export interface NewsSource {
   url: string;
   type: SourceType;
   selector?: string; // CSS selector for web scraping
+  imageSelector?: string; // CSS selector for image
+  summarySelector?: string; // CSS selector for summary/bajada
 }
 
 export interface Actor {
@@ -22,9 +24,11 @@ export interface NewsItem {
   sourceId: string;
   sourceName: string;
   pubDate: string;
+  content?: string;
   contentSnippet?: string;
+  imageUrl?: string;
   matchedActorIds: string[];
-  tags?: Tag[];
+  tags: Tag[]; // Made mandatory for consistency
 }
 
 export interface Tag {

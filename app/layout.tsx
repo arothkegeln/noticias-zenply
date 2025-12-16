@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description: "Track your news efficiently",
 };
 
+import { ConfigProvider } from '@/components/config-provider';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -18,14 +20,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.className} min-h-screen bg-background text-foreground`}>
+      <body className="min-h-screen bg-background text-foreground" style={{ fontFamily: inter.style.fontFamily }} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <ConfigProvider>
+            {children}
+          </ConfigProvider>
         </ThemeProvider>
       </body>
     </html>

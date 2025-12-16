@@ -22,6 +22,7 @@ model User {
   // User preferences
   sources       NewsSource[]
   actors        Actor[]
+  hiddenNews    HiddenNews[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,4 +98,40 @@ model Actor {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+model HiddenNews {
+  id        String   @id @default(cuid())
+  newsUrl   String
+  newsTitle String
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  hiddenAt  DateTime @default(now())
+  
+  @@unique([userId, newsUrl])
+  @@index([userId])
+}
+
+model News {
+  id             String   @id @default(cuid())
+  url            String   @unique
+  title          String
+  sourceId       String
+  sourceName     String
+  pubDate        DateTime
+  contentSnippet String?  @db.Text
+  imageUrl       String?
+  body           String?  @db.Text
+  
+  // Relations stored as JSON/Arrays
+  matchedActors  String[]
+  tags           String[]
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([pubDate])
+  @@index([sourceId])
 }

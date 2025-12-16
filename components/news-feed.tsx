@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { NewsItem, Actor } from '@/types';
 import { NewsCard } from './news-card';
 import { RefreshCw, Filter } from 'lucide-react';
+import { isSameDay, format, isToday, isYesterday } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 interface NewsFeedProps {
     news: NewsItem[];
@@ -11,12 +13,41 @@ interface NewsFeedProps {
     loading: boolean;
     onRefresh: () => void;
     onAddActor: (actor: Omit<Actor, 'id'>) => Promise<Actor | null>;
+    hiddenNewsUrls?: Set<string>;
+    onHide?: (newsUrl: string, newsTitle: string) => Promise<boolean>;
+    layout?: 'grid' | 'timeline';
+    hasMore?: boolean;
+    onLoadMore?: () => void;
 }
 
-export function NewsFeed({ news, actors, loading, onRefresh, onAddActor }: NewsFeedProps) {
+export function NewsFeed({ news, actors, loading, onRefresh, onAddActor, hiddenNewsUrls, onHide, layout = 'grid', hasMore = false, onLoadMore }: NewsFeedProps) {
     const [selectedSource, setSelectedSource] = useState<string>('all');
     const [selectedActor, setSelectedActor] = useState<string>('all');
     const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
+
+    // Infinite Scroll Observer
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+        const target = entries[0];
+        if (target.isIntersecting && hasMore && !loading) {
+            if (onLoadMore) onLoadMore();
+        }
+    }, [hasMore, loading, onLoadMore]);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(handleObserver, {
+            root: null,
+            rootMargin: "20px",
+            threshold: 0
+        });
+
+        const sentinel = document.getElementById("sentinel");
+        if (sentinel) observer.observe(sentinel);
+
+        return () => {
+            if (sentinel) observer.unobserve(sentinel);
+        };
+    }, [handleObserver, news.length]); // Re-attach when list grows
 
     // Get unique sources from news
     const sources = useMemo(() => {
@@ -27,6 +58,11 @@ export function NewsFeed({ news, actors, loading, onRefresh, onAddActor }: NewsF
     // Filter and sort news
     const filteredNews = useMemo(() => {
         let filtered = [...news];
+
+        // Filter out hidden news
+        if (hiddenNewsUrls && hiddenNewsUrls.size > 0) {
+            filtered = filtered.filter(item => !hiddenNewsUrls.has(item.link));
+        }
 
         // Filter by source
         if (selectedSource !== 'all') {
@@ -46,7 +82,7 @@ export function NewsFeed({ news, actors, loading, onRefresh, onAddActor }: NewsF
         });
 
         return filtered;
-    }, [news, selectedSource, selectedActor, sortOrder]);
+    }, [news, selectedSource, selectedActor, sortOrder, hiddenNewsUrls]);
 
     if (loading && news.length === 0) {
         return (
@@ -55,6 +91,8 @@ export function NewsFeed({ news, actors, loading, onRefresh, onAddActor }: NewsF
             </div>
         );
     }
+
+
 
     return (
         <div className="space-y-6">
@@ -128,32 +166,84 @@ export function NewsFeed({ news, actors, loading, onRefresh, onAddActor }: NewsF
                 </div>
             )}
 
-            {/* News Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredNews.length === 0 && news.length > 0 ? (
-                    <div className="col-span-full text-center py-20 text-muted-foreground border border-dashed border-border rounded-xl">
-                        <p>No hay noticias que coincidan con los filtros seleccionados.</p>
-                        <button
-                            onClick={() => {
-                                setSelectedSource('all');
-                                setSelectedActor('all');
-                            }}
-                            className="mt-4 text-primary hover:underline text-sm font-medium"
-                        >
-                            Limpiar filtros
-                        </button>
-                    </div>
-                ) : filteredNews.length === 0 ? (
-                    <div className="col-span-full text-center py-20 text-muted-foreground border border-dashed border-border rounded-xl">
-                        <p>No hay noticias todavía.</p>
-                        <p className="text-sm mt-2">Añade fuentes en configuración para empezar.</p>
-                    </div>
-                ) : (
-                    filteredNews.map((item) => (
-                        <NewsCard key={item.id} item={item} actors={actors} onAddActor={onAddActor} />
-                    ))
-                )}
-            </div>
+            {/* News Rendering */}
+            {filteredNews.length === 0 && news.length > 0 ? (
+                <div className="col-span-full text-center py-20 text-muted-foreground border border-dashed border-border rounded-xl">
+                    <p>No hay noticias que coincidan con los filtros seleccionados.</p>
+                    <button
+                        onClick={() => {
+                            setSelectedSource('all');
+                            setSelectedActor('all');
+                        }}
+                        className="mt-4 text-primary hover:underline text-sm font-medium"
+                    >
+                        Limpiar filtros
+                    </button>
+                </div>
+            ) : filteredNews.length === 0 ? (
+                <div className="col-span-full text-center py-20 text-muted-foreground border border-dashed border-border rounded-xl">
+                    <p>No hay noticias todavía.</p>
+                    <p className="text-sm mt-2">Añade fuentes en configuración para empezar.</p>
+                </div>
+            ) : layout === 'timeline' ? (
+                // Timeline Layout
+                <div className="max-w-3xl mx-auto space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
+                    {filteredNews.map((item, index) => {
+                        const showDateHeader = index === 0 || !isSameDay(new Date(item.pubDate), new Date(filteredNews[index - 1].pubDate));
+
+                        return (
+                            <div key={item.id}>
+                                {showDateHeader && (
+                                    <div className="flex justify-center mb-8 relative z-10">
+                                        <span className="bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider shadow-sm border border-primary/20 select-none">
+                                            {isToday(new Date(item.pubDate))
+                                                ? `Hoy, ${format(new Date(item.pubDate), "EEEE d 'de' MMMM", { locale: es })}`
+                                                : isYesterday(new Date(item.pubDate))
+                                                    ? `Ayer, ${format(new Date(item.pubDate), "EEEE d 'de' MMMM", { locale: es })}`
+                                                    : format(new Date(item.pubDate), "EEEE d 'de' MMMM, yyyy", { locale: es })}
+                                        </span>
+                                    </div>
+                                )}
+                                <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group">
+                                    {/* Dot */}
+                                    <div className="flex items-center justify-center w-10 h-10 rounded-full border border-border bg-background shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                        <span className="text-lg">📰</span>
+                                    </div>
+
+                                    {/* Card Content */}
+                                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-2">
+                                        <NewsCard
+                                            item={item}
+                                            actors={actors}
+                                            onAddActor={onAddActor}
+                                            onHide={onHide}
+                                            variant="compact"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            ) : (
+                // Grid Layout (Default)
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredNews.map((item) => (
+                        <NewsCard key={item.id} item={item} actors={actors} onAddActor={onAddActor} onHide={onHide} />
+                    ))}
+                </div>
+            )}
+
+            {/* Infinite Scroll Sentinel */}
+            {hasMore && (
+                <div id="sentinel" className="h-20 flex justify-center items-center">
+                    {loading ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    ) : (
+                        <span className="text-muted-foreground text-sm">Cargando más noticias...</span>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

@@ -33,6 +33,8 @@ export const MEDIA_CATALOG: CatalogItem[] = [
         url: 'https://www.df.cl/',
         type: 'web',
         selector: '.card__title',
+        imageSelector: '.card__img img',
+        summarySelector: '.card__description, .card__deck, .card__excerpt',
         language: 'es',
         category: 'Business',
         description: 'Líder en noticias financieras y de negocios en Chile.'
@@ -43,6 +45,8 @@ export const MEDIA_CATALOG: CatalogItem[] = [
         url: 'https://www.df.cl/ultimasnoticias',
         type: 'web',
         selector: '.card__title',
+        imageSelector: '.card__img img',
+        summarySelector: '.card__description, .card__deck, .card__excerpt',
         language: 'es',
         category: 'Business',
         description: 'Sección de últimas noticias minuto a minuto de Diario Financiero.'

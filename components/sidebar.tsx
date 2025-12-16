@@ -4,10 +4,15 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Settings, Newspaper, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Link as LinkIcon, ChevronDown, ChevronRight, Hash } from 'lucide-react';
+import { useConfig } from '@/hooks/use-config';
+import { useState } from 'react';
 import { ModeToggle } from './mode-toggle';
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { config } = useConfig();
+    const [topicsOpen, setTopicsOpen] = useState(true);
 
     const links = [
         { href: '/dashboard', label: 'Feed de Noticias', icon: Home },
@@ -48,6 +53,45 @@ export function Sidebar() {
                     );
                 })}
             </nav>
+
+            <div className="mt-8">
+                <button
+                    onClick={() => setTopicsOpen(!topicsOpen)}
+                    className="flex items-center justify-between w-full px-3 py-2 text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                >
+                    <span>Temas Seguidos</span>
+                    {topicsOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                </button>
+
+                {topicsOpen && (
+                    <div className="mt-2 space-y-1 overflow-y-auto max-h-[40vh] px-2 custom-scrollbar">
+                        {config.actors.length === 0 ? (
+                            <p className="text-xs text-muted-foreground px-3 py-2 italic">
+                                No sigues ningún tema aún.
+                            </p>
+                        ) : (
+                            config.actors.map((actor) => {
+                                const isActive = pathname === `/dashboard/topics/${actor.name}`;
+                                return (
+                                    <Link
+                                        key={actor.id}
+                                        href={`/dashboard/topics/${actor.name}`}
+                                        className={cn(
+                                            "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors",
+                                            isActive
+                                                ? "bg-primary/10 text-primary font-medium"
+                                                : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                                        )}
+                                    >
+                                        <Hash size={14} className="opacity-70" />
+                                        <span className="truncate">{actor.name}</span>
+                                    </Link>
+                                );
+                            })
+                        )}
+                    </div>
+                )}
+            </div>
 
             <div className="mt-auto pt-4 border-t border-border flex items-center justify-between gap-2">
                 <Link
