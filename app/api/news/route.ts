@@ -255,7 +255,7 @@ export async function POST(request: Request) {
                             pubDate: new Date(item.pubDate),
                             contentSnippet: item.contentSnippet,
                             imageUrl: item.imageUrl,
-                            matchedActorIds: item.matchedActorIds,
+                            matchedActors: item.matchedActorIds,
                             tags: item.tags.map(t => JSON.stringify(t))
                         }
                     });
