@@ -250,6 +250,13 @@ export async function POST(request: Request) {
 
                 // UPSERT TO DATABASE
                 try {
+                    // Validate Date
+                    let validDate = new Date(item.pubDate);
+                    if (isNaN(validDate.getTime())) {
+                        console.warn(`⚠️ Invalid date for ${item.link}: ${item.pubDate}. Fallback to NOW.`);
+                        validDate = new Date();
+                    }
+
                     await prisma.news.upsert({
                         where: { url: item.link },
                         update: {},
@@ -258,7 +265,7 @@ export async function POST(request: Request) {
                             title: item.title,
                             sourceId: item.sourceId,
                             sourceName: item.sourceName,
-                            pubDate: new Date(item.pubDate),
+                            pubDate: validDate,
                             contentSnippet: item.contentSnippet,
                             imageUrl: item.imageUrl,
                             matchedActors: item.matchedActorIds,
