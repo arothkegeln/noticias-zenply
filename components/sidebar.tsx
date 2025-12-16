@@ -22,7 +22,7 @@ export function Sidebar() {
     ];
 
     return (
-        <div className="w-64 h-screen bg-card text-card-foreground border-r border-border flex flex-col p-4 fixed left-0 top-0 transition-colors duration-300">
+        <div className="hidden md:flex w-64 h-screen bg-card text-card-foreground border-r border-border flex-col p-4 fixed left-0 top-0 transition-colors duration-300 z-50">
             <div className="flex items-center gap-2 mb-8 px-2">
                 <div className="bg-primary p-1 rounded">
                     <Newspaper className="h-6 w-6 text-primary-foreground" />
