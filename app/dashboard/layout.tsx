@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/sidebar";
+import { MobileNav } from "@/components/mobile-nav";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
