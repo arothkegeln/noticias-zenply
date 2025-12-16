@@ -34,8 +34,21 @@ export async function POST(request: Request) {
                             const $ = cheerio.load(html);
 
                             $(source.selector).each((_, element) => {
-                                const title = $(element).text().trim();
-                                const link = $(element).attr('href');
+                                const $el = $(element);
+                                let title = $el.text().trim();
+                                let link = $el.attr('href');
+
+                                // If the element is not a link, try to find the closest parent link
+                                if (!link) {
+                                    const $link = $el.closest('a');
+                                    if ($link.length) {
+                                        link = $link.attr('href');
+                                        // If title is empty, try to get it from the link's text
+                                        if (!title) {
+                                            title = $link.text().trim();
+                                        }
+                                    }
+                                }
 
                                 if (title && link) {
                                     // Fix relative URLs

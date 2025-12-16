@@ -32,7 +32,7 @@ export const MEDIA_CATALOG: CatalogItem[] = [
         name: 'Diario Financiero',
         url: 'https://www.df.cl/',
         type: 'web',
-        selector: 'h2 a',
+        selector: '.card__title',
         language: 'es',
         category: 'Business',
         description: 'Líder en noticias financieras y de negocios en Chile.'
@@ -42,7 +42,7 @@ export const MEDIA_CATALOG: CatalogItem[] = [
         name: 'DF - Últimas Noticias',
         url: 'https://www.df.cl/ultimasnoticias',
         type: 'web',
-        selector: 'h2 a',
+        selector: '.card__title',
         language: 'es',
         category: 'Business',
         description: 'Sección de últimas noticias minuto a minuto de Diario Financiero.'
