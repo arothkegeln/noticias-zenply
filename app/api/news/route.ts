@@ -91,13 +91,18 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Invalid sources' }, { status: 400 });
         }
 
+        // AMPLIFY LAMBDA TIMEOUT PROTECTION
+        // Limit to 3 sources max to avoid 30s timeout
+        const limitedSources = sources.slice(0, 3);
+        console.log(`⏱️ Processing ${limitedSources.length} of ${sources.length} sources (Lambda timeout protection)`);
+
         let allNews: NewsItem[] = [];
         const seenUrls = new Set<string>();
 
         // 1. Initial Fetch (RSS List / Web List)
         await Promise.all(
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            sources.map(async (source: any) => {
+            limitedSources.map(async (source: any) => {
                 try {
                     if (source.type === 'web' && source.selector) {
                         try {
