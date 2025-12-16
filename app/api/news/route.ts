@@ -92,9 +92,9 @@ export async function POST(request: Request) {
         }
 
         // AMPLIFY LAMBDA TIMEOUT PROTECTION
-        // Limit to 3 sources max to avoid 30s timeout
-        const limitedSources = sources.slice(0, 3);
-        console.log(`⏱️ Processing ${limitedSources.length} of ${sources.length} sources (Lambda timeout protection)`);
+        // Increased limits per user request (Risk of timeout accepted)
+        const limitedSources = sources.slice(0, 10);
+        console.log(`⏱️ Processing ${limitedSources.length} of ${sources.length} sources`);
 
         let allNews: NewsItem[] = [];
         const seenUrls = new Set<string>();
@@ -227,9 +227,9 @@ export async function POST(request: Request) {
         allNews.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 
         // AMPLIFY LAMBDA TIMEOUT PROTECTION
-        // Limit deep scraping to 20 most recent articles
-        const recentNews = allNews.slice(0, 20);
-        console.log(`⏱️ Deep scraping ${recentNews.length} of ${allNews.length} articles (Lambda timeout protection)`);
+        // Increased limit to 50 articles
+        const recentNews = allNews.slice(0, 50);
+        console.log(`⏱️ Deep scraping ${recentNews.length} of ${allNews.length} articles`);
 
         // 2. Deep Scraping & Persistence
         // Process in batches
