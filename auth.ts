@@ -2,16 +2,29 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import Credentials from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
+import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
 import { authConfig } from "./auth.config"
-
-const prisma = new PrismaClient()
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     ...authConfig,
     adapter: PrismaAdapter(prisma),
     session: { strategy: "jwt" }, // Required for middleware to work with Prisma
+    callbacks: {
+        ...authConfig.callbacks,
+        jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+            }
+            return token;
+        },
+        session({ session, token }) {
+            if (session.user && token.id) {
+                session.user.id = token.id as string;
+            }
+            return session;
+        },
+    },
     providers: [
         Google({
             clientId: process.env.AUTH_GOOGLE_ID,
@@ -23,7 +36,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 password: { label: "Password", type: "password" },
             },
             authorize: async (credentials) => {
+                console.log("🔐 Authorizing credentials for:", credentials?.email);
+
                 if (!credentials?.email || !credentials?.password) {
+                    console.log("❌ Missing credentials");
                     return null;
                 }
 
@@ -35,12 +51,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 });
 
                 if (!user || !user.password) {
+                    console.log("❌ User not found or no password set");
                     return null;
                 }
 
                 const passwordsMatch = await bcrypt.compare(password, user.password);
-                if (passwordsMatch) return user;
+                if (passwordsMatch) {
+                    console.log("✅ Credentials valid. User authorized.");
+                    return user;
+                }
 
+                console.log("❌ Invalid password");
                 return null;
             },
         }),

@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(timeout /t 3)",
+      "Bash(taskkill:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(ping:*)",
+      "Bash(nslookup:*)",
+      "Bash(powershell -Command \"Test-NetConnection -ComputerName aws-0-us-west-2.pooler.supabase.com -Port 6543\")"
+    ]
+  }
+}

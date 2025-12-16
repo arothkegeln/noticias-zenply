@@ -6,7 +6,7 @@ import { NewsFeed } from '@/components/news-feed';
 import { NewsItem } from '@/types';
 
 export default function Dashboard() {
-  const { config, loaded } = useConfig();
+  const { config, loaded, addActor } = useConfig();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -73,6 +73,7 @@ export default function Dashboard() {
         actors={config.actors}
         loading={loading}
         onRefresh={fetchNews}
+        onAddActor={addActor}
       />
     </div>
   );

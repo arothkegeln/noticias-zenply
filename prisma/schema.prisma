@@ -1,7 +1,7 @@
-
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 generator client {
@@ -18,7 +18,11 @@ model User {
   sessions      Session[]
   // Optional for Credentials provider
   password      String?
- 
+
+  // User preferences
+  sources       NewsSource[]
+  actors        Actor[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -60,6 +64,37 @@ model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@unique([identifier, token])
+}
+
+model NewsSource {
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  type      String   // 'rss' | 'web'
+  selector  String?  // CSS selector for web scraping
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Actor {
+  id        String   @id @default(cuid())
+  name      String
+  keywords  String   // Comma-separated keywords
+  color     String
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }

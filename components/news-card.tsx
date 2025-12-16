@@ -4,12 +4,11 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ExternalLink, Plus } from 'lucide-react';
 import { NewsItem, Actor, Tag } from '@/types';
-import { useConfig } from '@/hooks/use-config';
 import { useState } from 'react';
-
 interface NewsCardProps {
     item: NewsItem;
     actors: Actor[];
+    onAddActor: (actor: Omit<Actor, 'id'>) => Promise<Actor | null>;
 }
 
 const TAG_COLORS = {
@@ -26,8 +25,7 @@ const TAG_ICONS = {
     concept: '💡',
 };
 
-export function NewsCard({ item, actors }: NewsCardProps) {
-    const { addActor } = useConfig();
+export function NewsCard({ item, actors, onAddActor }: NewsCardProps) {
     const matchedActors = actors.filter(a => item.matchedActorIds.includes(a.id));
     const [addingTag, setAddingTag] = useState<string | null>(null);
 
@@ -49,8 +47,7 @@ export function NewsCard({ item, actors }: NewsCardProps) {
         const colors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-        addActor({
-            id: Math.random().toString(36).substr(2, 9),
+        onAddActor({
             name: tag.text,
             keywords: [tag.text],
             color: randomColor
@@ -65,32 +62,32 @@ export function NewsCard({ item, actors }: NewsCardProps) {
             href={item.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="group block h-full bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-600 transition-all duration-300 hover:shadow-lg hover:shadow-blue-900/10 flex flex-col"
+            className="group block h-full bg-card border border-border rounded-xl p-5 hover:border-foreground/20 transition-all duration-300 hover:shadow-lg flex flex-col"
         >
             <div className="flex justify-between items-start gap-4 mb-4">
                 <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                        <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                             {item.sourceName}
                         </span>
-                        <span className="text-zinc-600">•</span>
-                        <span className="text-xs text-zinc-500">
+                        <span className="text-muted-foreground">•</span>
+                        <span className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(item.pubDate), { addSuffix: true, locale: es })}
                         </span>
                     </div>
 
-                    <h3 className="text-lg font-bold text-zinc-100 mb-2 leading-tight group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-lg font-bold text-card-foreground mb-2 leading-tight group-hover:text-primary transition-colors">
                         {item.title}
                     </h3>
 
                     {item.contentSnippet && (
-                        <p className="text-zinc-400 text-sm line-clamp-3 mb-4">
+                        <p className="text-muted-foreground text-sm line-clamp-3 mb-4">
                             {item.contentSnippet}
                         </p>
                     )}
                 </div>
 
-                <div className="text-zinc-600 group-hover:text-white p-2 rounded-full group-hover:bg-zinc-800 transition-colors flex-shrink-0">
+                <div className="text-muted-foreground group-hover:text-foreground p-2 rounded-full group-hover:bg-accent transition-colors flex-shrink-0">
                     <ExternalLink size={20} />
                 </div>
             </div>
@@ -115,7 +112,7 @@ export function NewsCard({ item, actors }: NewsCardProps) {
 
             {/* Smart Tags */}
             {item.tags && item.tags.length > 0 && (
-                <div className="mt-auto pt-3 border-t border-zinc-800">
+                <div className="mt-auto pt-3 border-t border-border">
                     <div className="flex flex-wrap gap-2">
                         {item.tags.map((tag, idx) => {
                             const colors = TAG_COLORS[tag.category];
@@ -132,7 +129,7 @@ export function NewsCard({ item, actors }: NewsCardProps) {
                                     <span>{icon}</span>
                                     <span>{tag.text}</span>
                                     {isAdding ? (
-                                        <span className="text-green-400">✓</span>
+                                        <span className="text-green-500">✓</span>
                                     ) : (
                                         <Plus size={12} className="opacity-0 group-hover/tag:opacity-100 transition-opacity" />
                                     )}

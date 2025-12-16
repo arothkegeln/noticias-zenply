@@ -10,9 +10,10 @@ interface NewsFeedProps {
     actors: Actor[];
     loading: boolean;
     onRefresh: () => void;
+    onAddActor: (actor: Omit<Actor, 'id'>) => Promise<Actor | null>;
 }
 
-export function NewsFeed({ news, actors, loading, onRefresh }: NewsFeedProps) {
+export function NewsFeed({ news, actors, loading, onRefresh, onAddActor }: NewsFeedProps) {
     const [selectedSource, setSelectedSource] = useState<string>('all');
     const [selectedActor, setSelectedActor] = useState<string>('all');
     const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
@@ -59,13 +60,13 @@ export function NewsFeed({ news, actors, loading, onRefresh }: NewsFeedProps) {
         <div className="space-y-6">
             {/* Header with Refresh */}
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-zinc-100 to-zinc-400">
+                <h2 className="text-2xl font-bold text-foreground">
                     Últimas Noticias
                 </h2>
                 <button
                     onClick={onRefresh}
                     disabled={loading}
-                    className="p-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-colors disabled:opacity-50"
+                    className="p-2 bg-secondary hover:bg-secondary/80 rounded-lg text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
                 >
                     <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
                 </button>
@@ -73,8 +74,8 @@ export function NewsFeed({ news, actors, loading, onRefresh }: NewsFeedProps) {
 
             {/* Filters */}
             {news.length > 0 && (
-                <div className="flex flex-col md:flex-row gap-4 bg-zinc-900/50 p-4 rounded-xl border border-zinc-800">
-                    <div className="flex items-center gap-2 text-zinc-400">
+                <div className="flex flex-col md:flex-row gap-4 bg-card p-4 rounded-xl border border-border shadow-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                         <Filter size={18} />
                         <span className="text-sm font-medium">Filtros:</span>
                     </div>
@@ -83,7 +84,7 @@ export function NewsFeed({ news, actors, loading, onRefresh }: NewsFeedProps) {
                     <select
                         value={selectedSource}
                         onChange={(e) => setSelectedSource(e.target.value)}
-                        className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-zinc-200 text-sm focus:outline-none focus:border-emerald-500"
+                        className="bg-background border border-input rounded-lg px-4 py-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         <option value="all">Todos los medios ({news.length})</option>
                         {sources.map(source => (
@@ -97,7 +98,7 @@ export function NewsFeed({ news, actors, loading, onRefresh }: NewsFeedProps) {
                     <select
                         value={selectedActor}
                         onChange={(e) => setSelectedActor(e.target.value)}
-                        className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-zinc-200 text-sm focus:outline-none focus:border-emerald-500"
+                        className="bg-background border border-input rounded-lg px-4 py-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         <option value="all">Todos los actores</option>
                         {actors.map(actor => {
@@ -114,14 +115,14 @@ export function NewsFeed({ news, actors, loading, onRefresh }: NewsFeedProps) {
                     <select
                         value={sortOrder}
                         onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
-                        className="bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-2 text-zinc-200 text-sm focus:outline-none focus:border-emerald-500"
+                        className="bg-background border border-input rounded-lg px-4 py-2 text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                     >
                         <option value="newest">Más recientes primero</option>
                         <option value="oldest">Más antiguas primero</option>
                     </select>
 
                     {/* Results count */}
-                    <div className="flex items-center text-sm text-zinc-500 ml-auto">
+                    <div className="flex items-center text-sm text-muted-foreground ml-auto">
                         Mostrando {filteredNews.length} de {news.length}
                     </div>
                 </div>
@@ -130,26 +131,26 @@ export function NewsFeed({ news, actors, loading, onRefresh }: NewsFeedProps) {
             {/* News Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredNews.length === 0 && news.length > 0 ? (
-                    <div className="col-span-full text-center py-20 text-zinc-500 border border-dashed border-zinc-800 rounded-xl">
+                    <div className="col-span-full text-center py-20 text-muted-foreground border border-dashed border-border rounded-xl">
                         <p>No hay noticias que coincidan con los filtros seleccionados.</p>
                         <button
                             onClick={() => {
                                 setSelectedSource('all');
                                 setSelectedActor('all');
                             }}
-                            className="mt-4 text-emerald-500 hover:text-emerald-400 text-sm"
+                            className="mt-4 text-primary hover:underline text-sm font-medium"
                         >
                             Limpiar filtros
                         </button>
                     </div>
                 ) : filteredNews.length === 0 ? (
-                    <div className="col-span-full text-center py-20 text-zinc-500 border border-dashed border-zinc-800 rounded-xl">
+                    <div className="col-span-full text-center py-20 text-muted-foreground border border-dashed border-border rounded-xl">
                         <p>No hay noticias todavía.</p>
                         <p className="text-sm mt-2">Añade fuentes en configuración para empezar.</p>
                     </div>
                 ) : (
                     filteredNews.map((item) => (
-                        <NewsCard key={item.id} item={item} actors={actors} />
+                        <NewsCard key={item.id} item={item} actors={actors} onAddActor={onAddActor} />
                     ))
                 )}
             </div>

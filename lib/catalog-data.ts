@@ -30,11 +30,22 @@ export const MEDIA_CATALOG: CatalogItem[] = [
     {
         id: 'df-cl',
         name: 'Diario Financiero',
-        url: 'https://www.df.cl/noticias/site/artic/rss/rss.xml',
-        type: 'rss',
+        url: 'https://www.df.cl/',
+        type: 'web',
+        selector: 'h2 a',
         language: 'es',
         category: 'Business',
         description: 'Líder en noticias financieras y de negocios en Chile.'
+    },
+    {
+        id: 'df-cl-latest',
+        name: 'DF - Últimas Noticias',
+        url: 'https://www.df.cl/ultimasnoticias',
+        type: 'web',
+        selector: 'h2 a',
+        language: 'es',
+        category: 'Business',
+        description: 'Sección de últimas noticias minuto a minuto de Diario Financiero.'
     },
     {
         id: 'emol',
@@ -75,11 +86,71 @@ export const MEDIA_CATALOG: CatalogItem[] = [
     {
         id: 'meganoticias',
         name: 'Meganoticias',
-        url: 'https://www.meganoticias.cl/feed/',
-        type: 'rss',
+        url: 'https://www.meganoticias.cl/',
+        type: 'web',
+        selector: 'h2 a',
         language: 'es',
         category: 'General',
         description: 'Noticias de Mega Chile.'
+    },
+    {
+        id: 'cooperativa',
+        name: 'Cooperativa',
+        url: 'https://www.cooperativa.cl/',
+        type: 'web',
+        selector: 'h2 a',
+        language: 'es',
+        category: 'General',
+        description: 'Noticias y actualidad minuto a minuto de Radio Cooperativa.'
+    },
+    {
+        id: 'elmostrador',
+        name: 'El Mostrador',
+        url: 'https://www.elmostrador.cl/',
+        type: 'web',
+        selector: 'h2 a',
+        language: 'es',
+        category: 'Politics',
+        description: 'Diario digital de análisis y opinión independiente.'
+    },
+    {
+        id: 'publimetro',
+        name: 'Publimetro',
+        url: 'https://www.publimetro.cl/',
+        type: 'web',
+        selector: 'h2 a',
+        language: 'es',
+        category: 'General',
+        description: 'Noticias de Chile y el mundo, estilo directo.'
+    },
+    {
+        id: 'theclinic',
+        name: 'The Clinic',
+        url: 'https://www.theclinic.cl/feed/',
+        type: 'rss',
+        language: 'es',
+        category: 'Politics',
+        description: 'Sátira, humor, política y cultura pop chilena.'
+    },
+    {
+        id: 'eldinamo',
+        name: 'El Dínamo',
+        url: 'https://www.eldinamo.cl/',
+        type: 'web',
+        selector: 'h2 a',
+        language: 'es',
+        category: 'Politics',
+        description: 'Análisis político, actualidad y datos.'
+    },
+    {
+        id: 'adnradio',
+        name: 'ADN Radio',
+        url: 'https://www.adnradio.cl/',
+        type: 'web',
+        selector: 'h2 a',
+        language: 'es',
+        category: 'General',
+        description: 'Actualidad, deportes y noticias de Radio ADN.'
     },
 
     // --- ENGLISH ---
