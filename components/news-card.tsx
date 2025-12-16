@@ -30,7 +30,7 @@ const TAG_ICONS = {
 };
 
 export function NewsCard({ item, actors, onAddActor, onHide, variant = 'default' }: NewsCardProps) {
-    const matchedActors = actors.filter(a => item.matchedActorIds.includes(a.id));
+    const matchedActors = actors.filter(a => (item.matchedActorIds || []).includes(a.id));
     const [addingTag, setAddingTag] = useState<string | null>(null);
     const [hiding, setHiding] = useState(false);
     const [imageError, setImageError] = useState(false);

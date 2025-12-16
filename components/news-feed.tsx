@@ -166,7 +166,7 @@ export function NewsFeed({ news, actors, loading, onRefresh, onAddActor, hiddenN
                     >
                         <option value="all">Todos los actores</option>
                         {actors.map(actor => {
-                            const count = news.filter(n => n.matchedActorIds.includes(actor.id)).length;
+                            const count = news.filter(n => (n.matchedActorIds || []).includes(actor.id)).length;
                             return (
                                 <option key={actor.id} value={actor.id}>
                                     {actor.name} ({count})
