@@ -58,7 +58,7 @@ export default function TopicPage() {
                     );
 
                     // Check matched actors ID (Server-side match)
-                    const idMatch = relevantActor && item.matchedActorIds.includes(relevantActor.id);
+                    const idMatch = relevantActor && (item.matchedActorIds || []).includes(relevantActor.id);
 
                     return textMatch || tagMatch || idMatch;
                 });
