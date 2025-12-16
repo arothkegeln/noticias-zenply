@@ -33,26 +33,34 @@ export default function TopicPage() {
             const data = await res.json();
             if (data.news) {
                 // Client-side filtering for the topic
-                const topicLower = topic.toLowerCase();
                 const topicNormalized = normalizeText(topic);
 
+                // Find if this topic corresponds to a configured actor
+                const relevantActor = config.actors.find(a => normalizeText(a.name) === topicNormalized);
+
+                // Get keywords from actor or just use the topic itself
+                const searchKeywords = relevantActor
+                    ? [relevantActor.name, ...relevantActor.keywords].map(normalizeText)
+                    : [topicNormalized];
+
                 const filtered = data.news.filter((item: NewsItem) => {
-                    // Normalize item fields
                     const titleNormalized = normalizeText(item.title);
+                    const contentNormalized = normalizeText(item.contentSnippet || '');
 
-                    // Check if title contains topic
-                    const inTitle = titleNormalized.includes(topicNormalized);
-
-                    // Check tags
-                    const inTags = (item.tags || []).some(t =>
-                        normalizeText(t.text).includes(topicNormalized)
+                    // Check text matches (Title OR Content)
+                    const textMatch = searchKeywords.some(keyword =>
+                        titleNormalized.includes(keyword) || contentNormalized.includes(keyword)
                     );
 
-                    // Check matched actors
-                    const relevantActor = config.actors.find(a => normalizeText(a.name) === topicNormalized);
-                    const isMatchedActor = relevantActor && item.matchedActorIds.includes(relevantActor.id);
+                    // Check tags
+                    const tagMatch = (item.tags || []).some(t =>
+                        searchKeywords.some(keyword => normalizeText(t.text).includes(keyword))
+                    );
 
-                    return inTitle || inTags || isMatchedActor;
+                    // Check matched actors ID (Server-side match)
+                    const idMatch = relevantActor && item.matchedActorIds.includes(relevantActor.id);
+
+                    return textMatch || tagMatch || idMatch;
                 });
                 setNews(filtered);
             }
