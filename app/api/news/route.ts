@@ -221,8 +221,9 @@ export async function POST(request: Request) {
         // Sort by date desc
         allNews.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 
-        // Limit to reasonable number before deep scraping to avoid timeouts (e.g., 100 latest items)
-        const recentNews = allNews.slice(0, 100);
+        // Limit Removed - User requested "Infinite" scraping even if slow
+        // const recentNews = allNews.slice(0, 100);
+        const recentNews = allNews;
 
         // 2. Deep Scraping & Persistence
         // Process in batches
@@ -272,7 +273,7 @@ export async function POST(request: Request) {
         // This allows mixed history + fresh news
         try {
             const storedNews = await prisma.news.findMany({
-                take: 100,
+                take: 500, // Increased from 100 to support broader range
                 orderBy: { pubDate: 'desc' },
                 where: {
                     sourceId: { in: sources.map((s: any) => s.id) }

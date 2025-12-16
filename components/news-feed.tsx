@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { NewsItem, Actor } from '@/types';
 import { NewsCard } from './news-card';
 import { RefreshCw, Filter } from 'lucide-react';
+import { NewsCardSkeleton } from './news-card-skeleton';
 import { isSameDay, format, isToday, isYesterday } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -84,10 +85,35 @@ export function NewsFeed({ news, actors, loading, onRefresh, onAddActor, hiddenN
         return filtered;
     }, [news, selectedSource, selectedActor, sortOrder, hiddenNewsUrls]);
 
+    // ... inside component ...
+
+    // ... inside component ...
+
     if (loading && news.length === 0) {
+        if (layout === 'timeline') {
+            return (
+                <div className="max-w-3xl mx-auto space-y-8 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
+                    {/* Timeline Skeletons */}
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <div key={i} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-border bg-background shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                                <span className="animate-pulse bg-muted rounded-full w-6 h-6" />
+                            </div>
+                            <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-2">
+                                <NewsCardSkeleton variant="compact" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            );
+        }
+
+        // Grid Skeletons
         return (
-            <div className="flex justify-center items-center py-20">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.from({ length: 9 }).map((_, i) => (
+                    <NewsCardSkeleton key={i} />
+                ))}
             </div>
         );
     }
