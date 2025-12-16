@@ -5,6 +5,7 @@ export const authConfig = {
         signIn: '/login',
     },
     session: { strategy: "jwt" },
+    trustHost: true, // Required for AWS Amplify deployment
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
