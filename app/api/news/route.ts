@@ -226,9 +226,10 @@ export async function POST(request: Request) {
         // Sort by date desc
         allNews.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime());
 
-        // Limit Removed - User requested "Infinite" scraping even if slow
-        // const recentNews = allNews.slice(0, 100);
-        const recentNews = allNews;
+        // AMPLIFY LAMBDA TIMEOUT PROTECTION
+        // Limit deep scraping to 20 most recent articles
+        const recentNews = allNews.slice(0, 20);
+        console.log(`⏱️ Deep scraping ${recentNews.length} of ${allNews.length} articles (Lambda timeout protection)`);
 
         // 2. Deep Scraping & Persistence
         // Process in batches
